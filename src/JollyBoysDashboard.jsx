@@ -180,7 +180,8 @@ export default function JollyBoysDashboard() {
                 {card("Total 2026", groupData.total_2026, "cyan")}
                 {card("Total Fine", groupData.total_fine, "orange")}
                 {card("Ongoing Loan Total", groupData.status1_total, "red")}
-                {card("Closed Loan Total", groupData.status2_total, "blue")}
+                {/* {card("Closed Loan Total", groupData.status2_total, "blue")} */}
+                {card("2026 Interest", groupData.totalLoanPaid, "purple")}
                 {card("Previous 2025 Interest", groupData.previous2025Interest, "purple")}
                 {card("Whole Total", groupData.whole_total - groupData.status1_total, "green")}
               </div>
