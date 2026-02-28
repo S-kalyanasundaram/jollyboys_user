@@ -35,6 +35,10 @@ export default function JollyBoysDashboard() {
 
     setLoanData(loan);
     
+    const { data: previousInterest } = await supabase
+    .from("previous_intrest")
+    .select("*")
+    .maybeSingle();
 
     const { data: members } = await supabase
       .from("amount_2026")
@@ -50,13 +54,13 @@ export default function JollyBoysDashboard() {
     
 
 
-    calculateGroup(members, loans,loans1);
+    calculateGroup(members, loans,loans1,previousInterest);
   };
 
 
 
 
-  const calculateGroup = (members, loans,loans1) => {
+  const calculateGroup = (members, loans,loans1,previousInterest) => {
   let total_2024 = 0;
   let total_2025 = 0;
   let total_2026 = 0;
@@ -86,6 +90,9 @@ export default function JollyBoysDashboard() {
     ? loans1.reduce((sum, k) => sum + (k.loan_total || 0), 0)
     : 0;
 
+  const previous2025Interest =
+    previousInterest?.interest_2025 || 0;
+
   
 
   const whole_total =
@@ -93,7 +100,8 @@ export default function JollyBoysDashboard() {
     total_2025 +
     total_2026 +
     total_fine +
-    totalLoanPaid
+    totalLoanPaid +
+    previous2025Interest;
 
   setGroupData({
     total_2024,
@@ -103,6 +111,7 @@ export default function JollyBoysDashboard() {
     status1_total: ongoing_total,
     status2_total: closed_adjustment,
     whole_total,
+    previous2025Interest,
     totalLoanPaid,
   });
 };
@@ -172,6 +181,7 @@ export default function JollyBoysDashboard() {
                 {card("Total Fine", groupData.total_fine, "orange")}
                 {card("Ongoing Loan Total", groupData.status1_total, "red")}
                 {card("Closed Loan Total", groupData.status2_total, "blue")}
+                {card("Previous 2025 Interest", groupData.previous2025Interest, "purple")}
                 {card("Whole Total", groupData.whole_total - groupData.status1_total, "green")}
               </div>
             </>
