@@ -10,7 +10,8 @@ const supabase = createClient(
 export default function JollyBoysDashboard() {
   const [userId, setUserId] = useState("");
   const [userData, setUserData] = useState(null);
-  const [loanData, setLoanData] = useState(null);
+  const [loanData, setLoanData] = useState([]);
+  const [loanSummary, setLoanSummary] = useState(null);
   const [groupData, setGroupData] = useState(null);
 
   const login = async () => {
@@ -30,15 +31,15 @@ export default function JollyBoysDashboard() {
     const { data: loan } = await supabase
       .from("loan_details")
       .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
+      .eq("user_id", userId);
 
-    setLoanData(loan);
-    
+    setLoanData(loan || []);
+    calculateUserLoans(loan || []);
+
     const { data: previousInterest } = await supabase
-    .from("previous_intrest")
-    .select("*")
-    .maybeSingle();
+      .from("previous_intrest")
+      .select("*")
+      .maybeSingle();
 
     const { data: members } = await supabase
       .from("amount_2026")
@@ -51,70 +52,82 @@ export default function JollyBoysDashboard() {
     const { data: loans } = await supabase
       .from("loan_details")
       .select("loan_amount, status_id");
-    
 
-
-    calculateGroup(members, loans,loans1,previousInterest);
+    calculateGroup(members, loans, loans1, previousInterest);
   };
 
+  const calculateUserLoans = (loans) => {
+    let ongoingTotal = 0;
+    let closedTotal = 0;
 
+    loans.forEach((l) => {
+      if (l.status_id === 1) {
+        ongoingTotal += l.loan_amount || 0;
+      } else if (l.status_id === 1) {
+        closedTotal += l.loan_amount || 0;
+      }
+      if (l.status_id === 1) {
+        closedTotal += l.loan_total || 0;
+      }
+    });
 
+    setLoanSummary({
+      ongoingTotal,
+      closedTotal,
+      status: ongoingTotal > 0 ? "Ongoing" : "Closed",
+    });
+  };
 
-  const calculateGroup = (members, loans,loans1,previousInterest) => {
-  let total_2024 = 0;
-  let total_2025 = 0;
-  let total_2026 = 0;
-  let total_fine = 0;
+  const calculateGroup = (members, loans, loans1, previousInterest) => {
+    let total_2024 = 0;
+    let total_2025 = 0;
+    let total_2026 = 0;
+    let total_fine = 0;
 
-  let ongoing_total = 0;   // status 1
-  let closed_adjustment = 0; // status 2 difference only
+    let ongoing_total = 0;
+    let closed_adjustment = 0;
 
-  members.forEach((m) => {
-    total_2024 += m.balance_2024 || 0;
-    total_2025 += m.balance_2025 || 0;
-    total_2026 += m.balance_2026 || 0;
-    total_fine += m.fine_2026 || 0;
-  });
+    members.forEach((m) => {
+      total_2024 += m.balance_2024 || 0;
+      total_2025 += m.balance_2025 || 0;
+      total_2026 += m.balance_2026 || 0;
+      total_fine += m.fine_2026 || 0;
+    });
 
-  loans.forEach((l) => {
-    if (l.status_id === 1) {
-      // Still outside money
-      ongoing_total += l.loan_amount || 0;
-    } else if (l.status_id === 2) {
-      // Loan closed → add back only once
-      closed_adjustment += l.loan_amount || 0;
-    }
-  });
+    loans.forEach((l) => {
+      if (l.status_id === 1) {
+        ongoing_total += l.loan_amount || 0;
+      } else if (l.status_id === 2) {
+        closed_adjustment += l.loan_amount || 0;
+      }
+    });
 
-  const totalLoanPaid = loans1
-    ? loans1.reduce((sum, k) => sum + (k.loan_total || 0), 0)
-    : 0;
+    const totalLoanPaid = loans1
+      ? loans1.reduce((sum, k) => sum + (k.loan_total || 0), 0)
+      : 0;
 
-  const previous2025Interest =
-    previousInterest?.interest_2025 || 0;
+    const previous2025Interest = previousInterest?.interest_2025 || 0;
 
-  
+    const whole_total =
+      total_2024 +
+      total_2025 +
+      total_2026 +
+      total_fine +
+      totalLoanPaid +
+      previous2025Interest;
 
-  const whole_total =
-    total_2024 +
-    total_2025 +
-    total_2026 +
-    total_fine +
-    totalLoanPaid +
-    previous2025Interest;
-
-  setGroupData({
-    total_2024,
-    total_2025,
-    total_2026,
-    total_fine,
-    status1_total: ongoing_total,
-    status2_total: closed_adjustment,
-    whole_total,
-    previous2025Interest,
-    totalLoanPaid,
-  });
-};
+    setGroupData({
+      total_2024,
+      total_2025,
+      total_2026,
+      total_fine,
+      status1_total: ongoing_total,
+      status2_total: closed_adjustment,
+      whole_total,
+      previous2025Interest,
+      totalLoanPaid,
+    });
+  };
 
   const card = (title, value, color) => (
     <div className={`card ${color}`}>
@@ -144,7 +157,6 @@ export default function JollyBoysDashboard() {
             👋 Welcome, <span>{userData.name}</span>
           </h1>
 
-          {/* USER DASHBOARD */}
           <h2>User Dashboard</h2>
           <div className="grid">
             {card("2024 Balance", userData.balance_2024, "purple")}
@@ -154,23 +166,21 @@ export default function JollyBoysDashboard() {
             {card("Total", userData.total, "green")}
           </div>
 
-          {/* LOAN */}
-          {loanData && (
+          {loanSummary && (
             <>
               <h2>Loan Details</h2>
               <div className="grid">
-                {card("Loan Amount", loanData.loan_amount, "red")}
-                {card("Loan Total Paid", loanData.loan_total, "blue")}
+                {card("Ongoing Loan Amount", loanSummary.ongoingTotal, "red")}
+                {card("Closed Loan Amount", loanSummary.closedTotal, "blue")}
                 {card(
                   "Status",
-                  loanData.status_id === 1 ? "Ongoing" : "Closed",
-                  loanData.status_id === 1 ? "red" : "green"
+                  loanSummary.status,
+                  loanSummary.status === "Ongoing" ? "red" : "green"
                 )}
               </div>
             </>
           )}
 
-          {/* GROUP DASHBOARD */}
           {groupData && (
             <>
               <h2>Group Dashboard</h2>
@@ -180,7 +190,6 @@ export default function JollyBoysDashboard() {
                 {card("Total 2026", groupData.total_2026, "cyan")}
                 {card("Total Fine", groupData.total_fine, "orange")}
                 {card("Ongoing Loan Total", groupData.status1_total, "red")}
-                {/* {card("Closed Loan Total", groupData.status2_total, "blue")} */}
                 {card("2026 Interest", groupData.totalLoanPaid, "purple")}
                 {card("Previous 2025 Interest", groupData.previous2025Interest, "purple")}
                 {card("Whole Total", groupData.whole_total - groupData.status1_total, "green")}
