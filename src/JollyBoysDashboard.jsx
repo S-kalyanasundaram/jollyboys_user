@@ -107,6 +107,7 @@ export default function JollyBoysDashboard() {
       : 0;
 
     const previous2025Interest = previousInterest?.interest_2025 || 0;
+    const previous2025fine = previousInterest?.previous_fin_amount || 0;
 
     const whole_total =
       total_2024 +
@@ -114,6 +115,7 @@ export default function JollyBoysDashboard() {
       total_2026 +
       total_fine +
       totalLoanPaid +
+      previous2025fine +
       previous2025Interest;
 
     setGroupData({
@@ -125,6 +127,7 @@ export default function JollyBoysDashboard() {
       status2_total: closed_adjustment,
       whole_total,
       previous2025Interest,
+      previous2025fine,
       totalLoanPaid,
     });
   };
@@ -166,7 +169,7 @@ export default function JollyBoysDashboard() {
             {card("Total", userData.total, "green")}
           </div>
 
-          {loanSummary && (
+          {loanData.length > 0 && loanSummary && (
             <>
               <h2>Loan Details</h2>
               <div className="grid">
@@ -192,6 +195,7 @@ export default function JollyBoysDashboard() {
                 {card("Ongoing Loan Total", groupData.status1_total, "red")}
                 {card("2026 Interest", groupData.totalLoanPaid, "purple")}
                 {card("Previous 2025 Interest", groupData.previous2025Interest, "purple")}
+                {card("Previous 2025 Fine", groupData.previous2025fine, "purple")}
                 {card("Whole Total", groupData.whole_total - groupData.status1_total, "green")}
               </div>
             </>
