@@ -194,8 +194,8 @@ export default function JollyBoysDashboard() {
                 {card("Total Fine", groupData.total_fine, "orange")}
                 {card("Ongoing Loan Total", groupData.status1_total, "red")}
                 {card("2026 Interest", groupData.totalLoanPaid, "purple")}
-                {card("Previous 2025 Interest", groupData.previous2025Interest, "purple")}
-                {card("Previous 2025 Fine", groupData.previous2025fine, "purple")}
+                {/*card("Previous 2025 Interest", groupData.previous2025Interest, "purple")*/}
+                {/*card("Previous 2025 Fine", groupData.previous2025fine, "purple")*/}
                 {card("Whole Total", groupData.whole_total - groupData.status1_total, "green")}
               </div>
             </>
