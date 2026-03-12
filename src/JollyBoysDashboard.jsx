@@ -169,7 +169,7 @@ export default function JollyBoysDashboard() {
             {card("Total", userData.total, "green")}
           </div>
 
-          {loanData.length > 0 && loanSummary && (
+          {loanSummary && loanSummary.ongoingTotal > 0 && (
             <>
               <h2>Loan Details</h2>
               <div className="grid">
