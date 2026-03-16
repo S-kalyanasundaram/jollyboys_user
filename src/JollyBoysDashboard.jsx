@@ -189,12 +189,7 @@ export default function JollyBoysDashboard() {
           <h2>User Dashboard</h2>
 
           {/* Arrow Button */}
-          <button
-          className="arrow-btn"
-          onClick={() => setShowLoans(!showLoans)}
-          >
-            Show Ongoing Loan Members
-          </button>
+          
 
           <div className="grid">
             {card("2024 Balance", userData.balance_2024, "purple")}
@@ -220,6 +215,12 @@ export default function JollyBoysDashboard() {
           )}
 
           {/* Show table only after arrow click */}
+          <button
+          className="arrow-btn"
+          onClick={() => setShowLoans(!showLoans)}
+          >
+            Show Ongoing Loan Members
+          </button>
           {showLoans && ongoingLoans.length > 0 && (
             <>
               <h2>Ongoing Loan Members</h2>
