@@ -13,6 +13,30 @@ export default function JollyBoysDashboard() {
   const [loanData, setLoanData] = useState([]);
   const [loanSummary, setLoanSummary] = useState(null);
   const [groupData, setGroupData] = useState(null);
+  const [ongoingLoans, setOngoingLoans] = useState([]);
+
+  /* NEW STATE (for arrow button) */
+  const [showLoans, setShowLoans] = useState(false);
+
+  const loadOngoingLoans = async () => {
+    const { data, error } = await supabase
+      .from("loan_details")
+      .select(`
+        loan_amount,
+        loan_total,
+        amount_2026 (
+          name
+        )
+      `)
+      .eq("status_id", 1);
+
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    setOngoingLoans(data || []);
+  };
 
   const login = async () => {
     const { data: user } = await supabase
@@ -27,6 +51,8 @@ export default function JollyBoysDashboard() {
     }
 
     setUserData(user);
+
+    loadOngoingLoans();
 
     const { data: loan } = await supabase
       .from("loan_details")
@@ -161,6 +187,15 @@ export default function JollyBoysDashboard() {
           </h1>
 
           <h2>User Dashboard</h2>
+
+          {/* Arrow Button */}
+          <button
+          className="arrow-btn"
+          onClick={() => setShowLoans(!showLoans)}
+          >
+            Show Ongoing Loan Members
+          </button>
+
           <div className="grid">
             {card("2024 Balance", userData.balance_2024, "purple")}
             {card("2025 Balance", userData.balance_2025, "blue")}
@@ -184,6 +219,33 @@ export default function JollyBoysDashboard() {
             </>
           )}
 
+          {/* Show table only after arrow click */}
+          {showLoans && ongoingLoans.length > 0 && (
+            <>
+              <h2>Ongoing Loan Members</h2>
+
+              <table className="loan-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Loan Amount</th>
+                    <th>Loan Total</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {ongoingLoans.map((loan, index) => (
+                    <tr key={index}>
+                      <td>{loan.amount_2026?.name}</td>
+                      <td>₹ {loan.loan_amount}</td>
+                      <td>₹ {loan.loan_total}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
+
           {groupData && (
             <>
               <h2>Group Dashboard</h2>
@@ -194,9 +256,11 @@ export default function JollyBoysDashboard() {
                 {card("Total Fine", groupData.total_fine, "orange")}
                 {card("Ongoing Loan Total", groupData.status1_total, "red")}
                 {card("2026 Interest", groupData.totalLoanPaid, "purple")}
-                {/* {card("Previous 2025 Interest", groupData.previous2025Interest, "purple")} */}
-                {/* {card("Previous 2025 Fine", groupData.previous2025fine, "purple")} */}
-                {card("Whole Total", groupData.whole_total - groupData.status1_total, "green")}
+                {card(
+                  "Whole Total",
+                  groupData.whole_total - groupData.status1_total,
+                  "green"
+                )}
               </div>
             </>
           )}
