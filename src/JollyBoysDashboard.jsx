@@ -230,7 +230,7 @@ export default function JollyBoysDashboard() {
                   <tr>
                     <th>Name</th>
                     <th>Loan Amount</th>
-                    <th>Loan Total</th>
+                    <th>Monthly Intrest</th>
                   </tr>
                 </thead>
 

@@ -160,6 +160,33 @@ body {
   font-size: 18px;
 }
 
+/* LOAN TABLE */
+.loan-table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
+  background:white;
+  border-radius:10px;
+  overflow:hidden;
+  color: #0f172a;
+}
+
+.loan-table th{
+  background:#1e293b;
+  color:white;
+  padding:12px;
+}
+
+.loan-table td{
+  padding:10px;
+  text-align:center;
+  border-bottom:1px solid #ddd;
+}
+
+.loan-table tr:hover{
+  background:#f1f5f9;
+}
+
 /* MOBILE OPTIMIZATION */
 @media (max-width: 768px) {
 
